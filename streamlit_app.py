@@ -104,11 +104,11 @@ def log_event(message):
     st.session_state['logs'].insert(0, f"[{timestamp}] {message}")
 
 def get_link_cost(u, v, data):
-    if data['status'] == 'Failed':
+    if data.get('status') == 'Failed':
         return float('inf')
-    bw_factor = 1000.0 / max(data['bandwidth'], 1)
+    bw_factor = 1000.0 / max(data.get('bandwidth', 100), 1)
     util_penalty = 2.5 if data.get('congested', False) else 1.0
-    cost = (data['latency'] * bw_factor * util_penalty) + (data['loss'] * 15)
+    cost = (data.get('latency', 10) * bw_factor * util_penalty) + (data.get('loss', 0) * 15)
     return max(1, int(cost))
 
 # --- HEADER & METRICS ---
@@ -118,7 +118,7 @@ st.markdown("*B.Tech Computer Networking Laboratory // Interactive Topology, Rou
 G = st.session_state['G']
 total_nodes = G.number_of_nodes()
 total_links = G.number_of_edges()
-failed_links = sum(1 for u, v, d in G.edges(data=True) if d['status'] == 'Failed')
+failed_links = sum(1 for u, v, d in G.edges(data=True) if d.get('status') == 'Failed')
 sent = st.session_state['stats']['sent']
 delivered = st.session_state['stats']['delivered']
 dropped = st.session_state['stats']['dropped']
@@ -146,7 +146,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 ])
 
 # ==========================================
-# TAB 1: TOPOLOGY & MEDIA BUILDER (REBUILT)
+# TAB 1: TOPOLOGY & MEDIA BUILDER
 # ==========================================
 with tab1:
     col_builder, col_preview = st.columns([1, 1])
@@ -202,10 +202,14 @@ with tab1:
             u, v = selected_edge.split(" ↔ ")
             edata = st.session_state['G'][u][v]
             
-            link_media = st.selectbox("Transmission Media Type", ["Copper (UTP Cat6 - 1Gbps)", "Fiber Optic (10Gbps)", "Wireless Wi-Fi 6 (300Mbps)"], index=0 if "Copper" in edata['media'] else (1 if "Fiber" in edata['media'] else 2))
-            custom_bw = st.slider("Bandwidth Capacity (Mbps)", 10, 10000, int(edata['bandwidth']))
-            custom_lat = st.slider("Propagation Delay / Latency (ms)", 1, 100, int(edata['latency']))
-            custom_loss = st.slider("Bit Error / Packet Loss Rate (%)", 0.0, 25.0, float(edata['loss']))
+            current_media = edata.get('media', 'Copper (UTP Cat6 - 1Gbps)')
+            media_options = ["Copper (UTP Cat6 - 1Gbps)", "Fiber Optic (10Gbps)", "Wireless Wi-Fi 6 (300Mbps)"]
+            default_media_idx = media_options.index(current_media) if current_media in media_options else 0
+            
+            link_media = st.selectbox("Transmission Media Type", media_options, index=default_media_idx)
+            custom_bw = st.slider("Bandwidth Capacity (Mbps)", 10, 10000, int(edata.get('bandwidth', 100)))
+            custom_lat = st.slider("Propagation Delay / Latency (ms)", 1, 100, int(edata.get('latency', 10)))
+            custom_loss = st.slider("Bit Error / Packet Loss Rate (%)", 0.0, 25.0, float(edata.get('loss', 0.0)))
             
             if st.button("💾 Apply Link Properties"):
                 st.session_state['G'][u][v]['media'] = link_media
@@ -222,13 +226,13 @@ with tab1:
         G = st.session_state['G']
         pos = nx.spring_layout(G, seed=42)
         
-        edge_x, edge_y, edge_colors, edge_hover = [], [], [], []
+        edge_x, edge_y, edge_colors = [], [], []
         for u, v, d in G.edges(data=True):
             x0, y0 = pos[u]
             x1, y1 = pos[v]
             edge_x.extend([x0, x1, None])
             edge_y.extend([y0, y1, None])
-            if d['status'] == 'Failed': edge_colors.append('#f43f5e')
+            if d.get('status') == 'Failed': edge_colors.append('#f43f5e')
             elif d.get('congested', False): edge_colors.append('#f59e0b')
             else: edge_colors.append('#38bdf8')
 
@@ -257,7 +261,7 @@ with tab1:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# TAB 2: PACKET SIMULATION & ROUTING (UNCHANGED & LOVED)
+# TAB 2: PACKET SIMULATION & ROUTING
 # ==========================================
 with tab2:
     st.subheader("📦 Packet Simulation & Dijkstra Routing Engine")
@@ -278,8 +282,8 @@ with tab2:
                 G = st.session_state['G']
                 try:
                     path = nx.shortest_path(G, source=source_node, target=dest_node, weight=lambda u, v, d: get_link_cost(u, v, d))
-                    total_lat = sum(G[path[i]][path[i+1]]['latency'] for i in range(len(path)-1))
-                    total_loss = max(G[path[i]][path[i+1]]['loss'] for i in range(len(path)-1))
+                    total_lat = sum(G[path[i]][path[i+1]].get('latency', 10) for i in range(len(path)-1))
+                    total_loss = max(G[path[i]][path[i+1]].get('loss', 0) for i in range(len(path)-1))
                     hops = len(path) - 1
                     dropped = random.uniform(0, 100) < total_loss
                     
@@ -346,7 +350,7 @@ with tab2:
         st.table(rt_data)
 
 # ==========================================
-# TAB 3: FAILURE & CONGESTION LAB (REBUILT & INTERACTIVE)
+# TAB 3: FAILURE & CONGESTION LAB
 # ==========================================
 with tab3:
     st.subheader("💥 Advanced Network Failure & Congestion Laboratory")
@@ -371,7 +375,7 @@ with tab3:
         if col_b2.button("🚦 Induce Heavy Congestion"):
             u, v = target_edge.split(" ↔ ")
             st.session_state['G'][u][v]['congested'] = True
-            st.session_state['G'][u][v]['latency'] *= 4
+            st.session_state['G'][u][v]['latency'] = st.session_state['G'][u][v].get('latency', 10) * 4
             log_event(f"WARNING: Severe traffic congestion injected on link {u} ↔ {v}.")
             st.rerun()
             
@@ -379,7 +383,8 @@ with tab3:
             for u, v, d in st.session_state['G'].edges(data=True):
                 d['status'] = 'Active'
                 d['congested'] = False
-                d['latency'] = max(2, d['latency'] // 4 if d['latency'] > 40 else d['latency'])
+                lat = d.get('latency', 10)
+                d['latency'] = max(2, lat // 4 if lat > 40 else lat)
             log_event("SUCCESS: All network links restored to normal operational state.")
             st.success("Network fully recovered!")
             st.rerun()
@@ -391,9 +396,8 @@ with tab3:
         
         G = st.session_state['G']
         try:
-            # Check route from PC-1 to PC-4
             path_test = nx.shortest_path(G, source="PC-1", target="PC-4", weight=lambda u, v, d: get_link_cost(u, v, d))
-            lat_test = sum(G[path_test[i]][path_test[i+1]]['latency'] for i in range(len(path_test)-1))
+            lat_test = sum(G[path_test[i]][path_test[i+1]].get('latency', 10) for i in range(len(path_test)-1))
             hops_test = len(path_test) - 1
             st.markdown(f"""
             <div class='success-box'>
@@ -414,7 +418,7 @@ with tab3:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# TAB 4: TCP HANDSHAKE, UDP & ARP (REBUILT & INTERACTIVE)
+# TAB 4: TCP HANDSHAKE, UDP & ARP
 # ==========================================
 with tab4:
     col_t1, col_t2 = st.columns(2)
@@ -449,7 +453,7 @@ with tab4:
         if st.button("🔍 Execute ARP Request"):
             st.markdown(f"""
             <div class='terminal'>
-            [PC-1] Broadcast ARP Request: "Who has {target_ip if 'target_ip' in locals() else arp_ip}?"<br>
+            [PC-1] Broadcast ARP Request: "Who has {arp_ip}?"<br>
             [Network] Broadcasted to Layer 2 MAC: FF:FF:FF:FF:FF:FF<br>
             [{arp_ip}] Unicast ARP Reply: "I have {arp_ip} at MAC AA:BB:CC:00:00:04"<br>
             [Cache] ARP Table updated successfully!
@@ -467,7 +471,7 @@ with tab4:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# TAB 5: OSI & TCP/IP MODELS (UNCHANGED & LOVED)
+# TAB 5: OSI & TCP/IP MODELS
 # ==========================================
 with tab5:
     st.subheader("📚 OSI Reference Model & TCP/IP Protocol Stack")
