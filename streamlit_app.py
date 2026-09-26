@@ -45,9 +45,8 @@ budget = st.sidebar.selectbox("Budget Constraint", ["Low-Cost (Budget)", "Modera
 priority = st.sidebar.selectbox("Primary Optimization Goal", ["Maximum Speed / Bandwidth", "High Reliability / Redundancy", "Lowest Cost"])
 
 # --- INTELLIGENT RECOMMENDATION ENGINE ---
-# Automatically determine best architecture based on user constraints
 rec_media = "Fiber Optic" if scale == "City-Wide WAN" or (priority == "Maximum Speed / Bandwidth" and budget != "Low-Cost (Budget)") else ("Copper (UTP)" if budget != "Enterprise (Unlimited)" else "Wireless / Wi-Fi")
-rec_topo = "Mesh" if priority == "High Reliability / Redundancy" else ("Star" if num_nodes <= 30 else "Bus/Ring")
+rec_topo = "Mesh" if priority == "High Reliability / Redundancy" else ("Star" if num_nodes <= 30 else "Bus")
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("💡 AI Architect Recommendation")
