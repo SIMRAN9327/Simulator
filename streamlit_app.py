@@ -139,7 +139,6 @@ with tab1:
         st.markdown("<div class='panel-card'>", unsafe_allow_html=True)
         st.subheader("Live Topology Graph")
         
-        # Use dynamic spring layout to prevent KeyErrors
         pos = nx.spring_layout(G, seed=42)
         
         edge_x, edge_y, edge_colors = [], [], []
@@ -271,7 +270,8 @@ with tab3:
         st.markdown("<div class='panel-card'>", unsafe_allow_html=True)
         st.subheader("📊 Dynamic Rerouting Comparison")
         
-        if st.session_state['last_failure_comparison']:
+        # Safe lookup using .get() to prevent any KeyError
+        if st.session_state.get('last_failure_comparison'):
             fc = st.session_state['last_failure_comparison']
             st.markdown(f"""
             <div class='error-box'>
