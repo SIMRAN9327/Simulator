@@ -108,7 +108,7 @@ tab1, tab2, tab3 = st.tabs([
     "🗺️ Network Topology",
     "📦 Packet Simulator",
     "💥 Failure Lab"
-] )
+])
 
 # ==========================================
 # TAB 1: NETWORK TOPOLOGY
@@ -139,7 +139,8 @@ with tab1:
         st.markdown("<div class='panel-card'>", unsafe_allow_html=True)
         st.subheader("Live Topology Graph")
         
-        pos = {"PC-1": (0, 0.5), "R1": (1, 0.5), "R2": (2, 1), "R3": (2, 0), "PC-2": (3, 0.5)}
+        # Use dynamic spring layout to prevent KeyErrors
+        pos = nx.spring_layout(G, seed=42)
         
         edge_x, edge_y, edge_colors = [], [], []
         for u, v, d in G.edges(data=True):
@@ -234,12 +235,11 @@ with tab3:
         st.markdown("Simulate a network outage by failing a link along the primary path:")
         
         edges_list = [f"{u} ↔ {v}" for u, v, d in G.edges(data=True)]
-        target_edge = st.selectbox("Select Link to Break", edges_list, index=1) # Default R1 ↔ R2
+        target_edge = st.selectbox("Select Link to Break", edges_list, index=1)
         
         col_b1, col_b2 = st.columns(2)
         if col_b1.button("💥 Fail Link"):
             u, v = target_edge.split(" ↔ ")
-            # Save original route for comparison
             orig_path = ["PC-1", "R1", "R2", "PC-2"]
             orig_lat = 30
             
@@ -296,7 +296,7 @@ st.markdown("""
 <h3>📚 Core Networking & Algorithm Concepts (Viva Reference)</h3>
 <ul>
     <li><b>Dijkstra's Shortest-Path Algorithm:</b> Used by routing protocols (like OSPF) to compute the optimal path with the minimum cumulative cost (latency) from source to destination.</li>
-    <li><b>Dynamic Rerouting:</b> When a link fails, its weight is set to infinity ($\infty$). The graph algorithm automatically updates routing tables and diverts traffic through alternative backup links.</li>
+    <li><b>Dynamic Rerouting:</b> When a link fails, its weight is set to infinity. The graph algorithm automatically updates routing tables and diverts traffic through alternative backup links.</li>
     <li><b>Packets & Hops:</b> Data is broken into packets. Each intermediate router represents a "hop" where the packet is inspected and forwarded toward its destination.</li>
 </ul>
 </div>
