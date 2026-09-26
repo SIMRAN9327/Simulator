@@ -34,19 +34,26 @@ st.markdown("""
         margin-bottom: 8px;
         border-radius: 4px;
     }
+    .eval-box {
+        background-color: #1e293b;
+        border-left: 4px solid #10b981;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("🌐 CyberNet: Core Networking Fundamentals Visualizer")
 st.markdown("""
-*An interactive simulation tool built for second-year computer networking students. Change transmission media, topologies, and networking devices to see how physical and logical layers impact performance.*
+*An interactive simulation tool for computer networking students. Configure your network parameters, test performance, and receive automated architecture evaluations.*
 """)
 
 # --- SIDEBAR: CORE NETWORKING OPTIONS ---
 st.sidebar.header("🎛️ Network Parameters")
 
 topology = st.sidebar.selectbox(
-    "1. Network Topology (Layer 3)",
+    "1. Network Topology",
     ["Star", "Mesh", "Ring", "Bus"]
 )
 
@@ -83,25 +90,51 @@ topo_multiplier = {"Star": 1.0, "Mesh": 0.8, "Ring": 1.4, "Bus": 2.2}[topology]
 final_latency = base_latency * topo_multiplier
 final_throughput = media_speed / topo_multiplier
 
+# --- AI ARCHITECTURE EVALUATION LOGIC ---
+eval_title = "✅ Optimal & Standard Design"
+eval_color = "#10b981"
+eval_message = "This configuration represents a stable, standard enterprise-grade deployment pattern."
+
+if "Hub" in device and (topology == "Mesh" or topology == "Ring"):
+    eval_title = "🚨 Architectural Conflict / Inefficient"
+    eval_color = "#f43f5e"
+    eval_message = "Traditional Hubs broadcast all traffic blindly and do not support the structured routing paths required for Mesh or Ring topologies."
+elif topology == "Bus" and media == "Fiber Optic":
+    eval_title = "⚠️ Over-Engineered / Unusual Combo"
+    eval_color = "#f59e0b"
+    eval_message = "Bus topologies are legacy layouts typically paired with coaxial cable. Using Fiber Optic on a Bus is uncommon and economically impractical."
+elif "Switch" in device and topology == "Star" and media in ["Copper (UTP Cat6)", "Fiber Optic"]:
+    eval_title = "🌟 Gold Standard Enterprise Setup"
+    eval_color = "#38bdf8"
+    eval_message = "This is the exact layout used in modern corporate offices and data centers (Star topology driven by a central Layer 2/3 switch)."
+
 # --- TABS FOR CLEAN PRESENTATION ---
-tab1, tab2 = st.tabs(["🗺️ Visual Topology & Performance", "📚 OSI / TCP Model Protocol Stack"])
+tab1, tab2 = st.tabs(["🗺️ Visual Topology & AI Evaluation", "📚 OSI / TCP Model Protocol Stack"])
 
 with tab1:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("📊 Performance Metrics")
+        st.subheader("📊 Performance & Recommendation Engine")
         m1, m2, m3 = st.columns(3)
-        m1.metric("Calculated Latency", f"{final_latency:.1f} ms")
-        m2.metric("Effective Throughput", f"{final_throughput:.0f} Mbps")
-        m3.metric("Collision Domain", collision_risk)
+        m1.metric("Latency", f"{final_latency:.1f} ms")
+        m2.metric("Throughput", f"{final_throughput:.0f} Mbps")
+        m3.metric("Collisions", collision_risk)
         
+        # Dynamic Evaluation Box
         st.markdown(f"""
-        <div class="card">
-        <b>Syllabus Concept Analysis:</b><br>
-        * <b>Topology ({topology}):</b> Defines how nodes are physically and logically interconnected.<br>
-        * <b>Media ({media}):</b> Determines signal attenuation and maximum bandwidth capabilities.<br>
-        * <b>Device ({device}):</b> Dictates whether traffic is intelligently switched or blindly broadcasted.
+        <div class="eval-box" style="border-left-color: {eval_color};">
+        <b>Architecture Evaluation: {eval_title}</b><br>
+        <span style="color:#cbd5e1; font-size: 14px;">{eval_message}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="card" style="margin-top: 10px;">
+        <b>Syllabus Breakdown:</b><br>
+        * <b>Topology ({topology}):</b> Defines physical/logical node connection layout.<br>
+        * <b>Media ({media}):</b> Determines bandwidth and signal limits.<br>
+        * <b>Device ({device}):</b> Controls frame forwarding and collision domains.
         </div>
         """, unsafe_allow_html=True)
 
@@ -110,7 +143,7 @@ with tab1:
         
         G = nx.Graph()
         if topology == "Star":
-            center = "Central Switch/Hub"
+            center = "Central Device"
             G.add_node(center)
             for i in range(1, 5): G.add_edge(center, f"PC-{i}")
             pos = nx.spring_layout(G, seed=42)
