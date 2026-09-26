@@ -1,12 +1,12 @@
 import streamlit as st
 import plotly.graph_objects as go
-import numpy as np
-import math
+import networkx as nx
+import time
 
 # Page configuration
 st.set_page_config(
-    page_title="CyberNet // Global WAN & OSI Simulator",
-    page_icon="🌍",
+    page_title="CyberNet // Hop-by-Hop Packet Tracer",
+    page_icon="🚀",
     layout="wide"
 )
 
@@ -28,152 +28,151 @@ st.markdown("""
         border-radius: 8px;
         margin-bottom: 10px;
     }
-    .osi-step {
+    .hop-box {
         background-color: #1e293b;
-        border-left: 4px solid #38bdf8;
-        padding: 8px 12px;
+        border-left: 4px solid #f43f5e;
+        padding: 10px;
         margin: 5px 0;
-        font-size: 14px;
         border-radius: 4px;
+        font-family: monospace;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🌍 CyberNet: Global WAN, Routing & OSI Packet Journey")
+st.title("🚀 CyberNet: Interactive Topology & Hop-by-Hop Packet Tracer")
 st.markdown("""
-*Simulate intercontinental data transmission across global coordinates. Track physics-based latency, submarine fiber/satellite degradation, and step-by-step OSI packet encapsulation.*
+*Configure your network topology, transmission media, and core devices. Click **Send Packet** to watch data hop across computers, switches, and routers in real-time while analyzing OSI layer behaviors.*
 """)
 
-# --- COUNTRY COORDINATES & DATABASE ---
-locations = {
-    "India (Mumbai)": {"lat": 19.0760, "lon": 72.8777},
-    "USA (New York)": {"lat": 40.7128, "lon": -74.0060},
-    "Germany (Frankfurt)": {"lat": 50.1109, "lon": 8.6821},
-    "Japan (Tokyo)": {"lat": 35.6762, "lon": 139.6503},
-    "Australia (Sydney)": {"lat": -33.8688, "lon": 151.2093},
-    "Brazil (São Paulo)": {"lat": -23.5505, "lon": -46.6333}
-}
-
 # --- SIDEBAR CONTROLS ---
-st.sidebar.header("🌐 Global Routing Parameters")
+st.sidebar.header("🎛️ Network Architecture Setup")
 
-source_country = st.sidebar.selectbox("Source Country (Sender)", list(locations.keys()), index=0)
-dest_country = st.sidebar.selectbox("Destination Country (Receiver)", list(locations.keys()), index=1)
+topology = st.sidebar.selectbox("Network Topology", ["Star", "Mesh", "Ring", "Bus"])
+media = st.sidebar.selectbox("Transmission Media (Layer 1)", ["Copper (UTP Cat6)", "Fiber Optic", "Wireless Wi-Fi 6"])
+device_type = st.sidebar.selectbox("Core Networking Device", ["Layer 2 Switch", "Layer 3 Router", "Traditional Hub"])
 
-transmission_medium = st.sidebar.selectbox(
-    "Long-Haul Transmission Medium", 
-    ["Submarine Fiber Optic Cable", "Geostationary Satellite Link"]
-)
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎯 Packet Simulation Control")
+source_node = st.sidebar.selectbox("Sender Computer", ["PC-A", "PC-B", "PC-C", "PC-D"])
+dest_node = st.sidebar.selectbox("Receiver Computer", ["PC-D", "PC-C", "PC-B", "PC-A"])
 
-traffic_congestion = st.sidebar.slider("Router Queue Congestion (%)", 0, 100, 15)
+# --- TOPOLOGY GRAPH GENERATION ---
+G = nx.Graph()
+if topology == "Star":
+    center = "Core Switch / Router"
+    nodes = ["PC-A", "PC-B", "PC-C", "PC-D"]
+    G.add_node(center)
+    for n in nodes: G.add_edge(center, n)
+    pos = nx.spring_layout(G, seed=42)
+    pos[center] = (0, 0)
+    pos["PC-A"] = (-1, 1)
+    pos["PC-B"] = (1, 1)
+    pos["PC-C"] = (-1, -1)
+    pos["PC-D"] = (1, -1)
+elif topology == "Mesh":
+    nodes = ["PC-A", "PC-B", "PC-C", "PC-D"]
+    G.add_nodes_from(nodes)
+    for i in range(len(nodes)):
+        for j in range(i+1, len(nodes)): G.add_edge(nodes[i], nodes[j])
+    pos = nx.spring_layout(G, seed=42)
+elif topology == "Ring":
+    nodes = ["PC-A", "PC-B", "PC-C", "PC-D"]
+    for i in range(len(nodes)): G.add_edge(nodes[i], nodes[(i+1)%len(nodes)])
+    pos = nx.circular_layout(nodes)
+else: # Bus
+    nodes = ["Terminator-1", "PC-A", "PC-B", "PC-C", "PC-D", "Terminator-2"]
+    for i in range(len(nodes)-1): G.add_edge(nodes[i], nodes[i+1])
+    pos = {n: (i*2, 0) for i, n in enumerate(nodes)}
 
-# --- HAVERSINE DISTANCE CALCULATION ---
-def get_distance(lat1, lon1, lat2, lon2):
-    R = 6371.0 # Earth radius in km
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
-    c = 2 * math.asin(math.sqrt(a))
-    return R * c
-
-lat1, lon1 = locations[source_country]["lat"], locations[source_country]["lon"]
-lat2, lon2 = locations[dest_country]["lat"], locations[dest_country]["lon"]
-distance_km = get_distance(lat1, lon1, lat2, lon2)
-
-# --- PHYSICS & NETWORK CALCULATIONS ---
-# Speed of light in fiber ~ 200,000 km/s. In Satellite ~ 300,000 km/s (but travels 36,000km up & down twice)
-if "Fiber" in transmission_medium:
-    propagation_delay = (distance_km / 200000.0) * 1000  # in ms (round trip or one-way factor)
-    base_loss = 0.05
-else: # Satellite
-    propagation_delay = 550.0 + (distance_km / 300000.0) * 1000 # High fixed satellite latency
-    base_loss = 2.5
-
-congestion_delay = traffic_congestion * 0.8
-total_latency = (propagation_delay * 1.5) + congestion_delay
-packet_loss_rate = base_loss + (traffic_congestion * 0.08)
-if source_country == dest_country:
-    total_latency = 2.0
-    packet_loss_rate = 0.0
-    distance_km = 0
-
-# --- TABS FOR STRUCTURED PRESENTATION ---
-tab1, tab2 = st.tabs(["🗺️ Global Map & WAN Performance", "📦 OSI Model Packet Encapsulation & Journey"])
+# --- TABS ---
+tab1, tab2 = st.tabs(["🗺️ Live Network Map & Packet Animation", "📦 OSI Layer & Device Interaction Log"])
 
 with tab1:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("📊 Global Transmission Metrics")
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Geographic Distance", f"{distance_km:,.0f} km")
-        m2.metric("Total Latency (RTT)", f"{total_latency:.1f} ms")
-        m3.metric("Packet Loss Rate", f"{packet_loss_rate:.2f}%")
+        st.subheader("🎮 Live Control Panel")
         
-        if packet_loss_rate < 1.0:
-            st.success("🟢 **WAN Link Status: Excellent Transmission Quality**")
-        elif 1.0 <= packet_loss_rate < 5.0:
-            st.warning("🟡 **WAN Link Status: Moderate Jitter & Latency**")
-        else:
-            st.error("🔴 **WAN Link Status: High Packet Loss / Congestion Drop**")
+        # Trigger packet simulation
+        if st.button("🚀 Send Packet (Start Hop Simulation)", type="primary"):
+            if source_node == dest_node:
+                st.warning("Source and destination cannot be the same computer!")
+            else:
+                st.session_state['animating'] = True
+        
+        # Performance metric calculations
+        base_lat = 5 if "Fiber" in media else (15 if "Copper" in media else 40)
+        if device_type == "Traditional Hub": base_lat *= 2 # Hubs cause collision delays
+        loss = 0.0 if "Fiber" in media else (0.5 if "Copper" in media else 3.5)
+        if topology == "Bus": loss += 2.0
+
+        st.metric("Estimated Hop Latency", f"{base_lat * 2} ms")
+        st.metric("Packet Delivery Health", f"{max(0, 100 - loss):.1f}%")
 
         st.markdown(f"""
         <div class="card">
-        <b>Physics Behind the Link:</b><br>
-        * <b>Medium ({transmission_medium}):</b> Light travels slower through glass fiber (~200,000 km/s) than a vacuum. Satellites require signals to travel to space and back, causing high fixed delay (~500ms+).<br>
-        * <b>Congestion Impact:</b> Router buffers fill up when traffic hits {traffic_congestion}%, causing queue delays.
+        <b>Active Setup Rules:</b><br>
+        * <b>Media:</b> {media} (Layer 1 signals)<br>
+        * <b>Device:</b> {device_type} ({'Broadcasts all traffic' if device_type=='Traditional Hub' else 'Smart packet forwarding'})<br>
+        * <b>Path:</b> {source_node} ➔ {topology} Network ➔ {dest_node}
         </div>
         """, unsafe_allow_html=True)
 
     with col2:
-        st.subheader(f"🗺️ Active Fiber Arc: {source_country} ➔ {dest_country}")
+        st.subheader(f"🗺️ Visual Topology: {topology}")
         
-        # Plotly Geo Map
-        fig = go.Figure(go.Scattergeo(
-            lat=[lat1, lat2],
-            lon=[lon1, lon2],
-            mode='lines+markers',
-            line=dict(width=3, color='#38bdf8' if "Fiber" in transmission_medium else '#f43f5e'),
-            marker=dict(size=10, color='#f43f5e')
-        ))
+        # Draw NetworkX graph using Plotly
+        edge_x, edge_y = [], []
+        for edge in G.edges():
+            x0, y0 = pos[edge[0]]
+            x1, y1 = pos[edge[1]]
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+
+        node_x = [pos[node][0] for node in G.nodes()]
+        node_y = [pos[node][1] for node in G.nodes()]
+        node_text = list(G.nodes())
+
+        net_fig = go.Figure()
+        net_fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=2, color='#38bdf8'), mode='lines'))
+        net_fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='text+markers',
+            marker=dict(size=20, color='#f43f5e', line=dict(width=2, color='#ffffff')),
+            text=node_text, textposition="top center"))
         
-        fig.update_geos(
-            projection_type="orthographic",
-            showland=True, landcolor="#111827",
-            showocean=True, oceancolor="#030712",
-            showcountries=True, countrycolor="#1f2937"
-        )
-        fig.update_layout(
-            template='plotly_dark',
-            paper_bgcolor='rgba(0,0,0,0)',
-            margin=dict(l=0, r=0, t=0, b=0),
-            height=350
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        net_fig.update_layout(showlegend=False, xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                              yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                              template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=350)
+        st.plotly_chart(net_fig, use_container_width=True)
 
 with tab2:
-    st.subheader("📦 Step-by-Step OSI Packet Encapsulation & Transmission")
-    st.markdown(f"Simulating a data packet traveling from **{source_country}** to **{dest_country}**:")
-
-    col_a, col_b = st.columns([1, 1])
+    st.subheader("📦 Live Packet Journey & OSI Device Processing")
     
-    with col_a:
-        st.markdown("### 📤 Sender Side (Encapsulation)")
-        st.markdown("""
-        <div class="osi-step"><b>1. Application (Layer 7):</b> User creates HTTP GET request payload.</div>
-        <div class="osi-step"><b>2. Presentation/Session (Layers 6-5):</b> Data is encrypted (TLS) and session is established.</div>
-        <div class="osi-step"><b>3. Transport (Layer 4):</b> Payload broken into TCP Segments + Ports added.</div>
-        <div class="osi-step"><b>4. Network (Layer 3):</b> Source & Destination IP headers attached (IPv4/IPv6).</div>
-        <div class="osi-step"><b>5. Data Link (Layer 2):</b> MAC addresses and frame checksum added.</div>
-        <div class="osi-step"><b>6. Physical (Layer 1):</b> Converted to light pulses for <b>""" + transmission_medium + """</b>.</div>
-        """, unsafe_allow_html=True)
+    if st.session_state.get('animating', False):
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        hops = [
+            f"Step 1: [{source_node}] Layer 7-4 -> Application data created, wrapped in TCP segments & IP packets.",
+            f"Step 2: [{source_node}] Layer 2-1 -> Encapsulated into Ethernet Frames and transmitted via {media}.",
+            f"Step 3: [Core Device: {device_type}] Layer 2/3 Processing -> Inspecting MAC/IP destination headers.",
+            f"Step 4: [Network Transit] Packet moving across {topology} topology links without collisions.",
+            f"Step 5: [{dest_node}] Layer 1-7 Decapsulation -> Stripping headers, verifying CRC, delivering payload."
+        ]
+        
+        for i, hop in enumerate(hops):
+            status_text.markdown(f"<div class='hop-box'>⚡ {hop}</div>", unsafe_allow_html=True)
+            progress_bar.progress((i + 1) * 20)
+            time.sleep(0.8)
+            
+        st.success(f"✅ Packet successfully transmitted from {source_node} to {dest_node}!")
+        st.session_state['animating'] = False
+    else:
+        st.info("👈 Go to the first tab, configure your network, and click **'🚀 Send Packet'** to watch the packet hop-by-hop traversal log!")
 
-    with col_b:
-        st.markdown("### 📥 Receiver Side (Decapsulation & Delivery)")
-        st.markdown(f"""
-        <div class="osi-step"><b>Transit:</b> Traveled {distance_km:,.0f} km across international borders via undersea cables/satellites.</div>
-        <div class="osi-step"><b>Packet Loss Check:</b> {packet_loss_rate:.2f}% chance of bit corruption/drop due to distance and congestion.</div>
-        <div class="osi-step"><b>Layer 1-3 Stripping:</b> Physical signals decoded, MAC frames checked, IP destination verified.</div>
-        <div class="osi-step"><b>Layer 4 Verification:</b> TCP sends ACK back to sender. If packets dropped, retransmission triggered.</div>
-        <div class="osi-step"><b>Layer 7 Delivery:</b> Data reassembled and rendered on the destination application screen!</div>
+        st.markdown("""
+        <div class="card">
+        <b>What this demonstrates for your evaluation:</b><br>
+        * <b>Device Role:</b> Shows the difference between a dumb <i>Hub</i> (broadcasts everything) vs a smart <i>Switch/Router</i>.<br>
+        * <b>Encapsulation:</b> Displays how computers wrap data before sending it across physical media.
+        </div>
         """, unsafe_allow_html=True)
