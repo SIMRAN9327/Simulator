@@ -66,7 +66,6 @@ architecture = st.sidebar.selectbox(
 )
 
 # --- PERFORMANCE ENGINE ---
-# Base calculations based on selections
 media_speed = {"Fiber Optic": 10000, "Copper (UTP Cat6)": 1000, "Wireless / Wi-Fi": 300}[media]
 base_latency = {"Fiber Optic": 3, "Copper (UTP Cat6)": 10, "Wireless / Wi-Fi": 35}[media]
 
@@ -148,7 +147,7 @@ with tab1:
 
         topo_fig = go.Figure()
         topo_fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=2, color='#38bdf8'), mode='lines'))
-        topo_fig.add_trace(go.Scatter(x=node_x, node_y, mode='text+markers',
+        topo_fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='text+markers',
             marker=dict(size=18, color='#f43f5e', line=dict(width=2, color='#ffffff')),
             text=node_text, textposition="top center"))
         
