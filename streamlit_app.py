@@ -282,4 +282,4 @@ with tab2:
     <div class="osi-card"><b>Layer 3: Network Layer</b><br><span style="color:#94a3b8;">Protocols: IPv4, IPv6, ICMP | Routing across <b>{topology}</b> topology via <b>{device}</b></span></div>
     <div class="osi-card"><b>Layer 2: Data Link Layer</b><br><span style="color:#94a3b8;">Protocols: Ethernet MAC addressing, Framing, Error detection (CRC)</span></div>
     <div class="osi-card"><b>Layer 1: Physical Layer</b><br><span style="color:#94a3b8;">Transmission Media: <b>{media}</b> (Converts data bits into electrical signals, light pulses, or RF waves)</span></div>
-    """, unsafe_app_html=True)
+    """, unsafe_allow_html=True)
