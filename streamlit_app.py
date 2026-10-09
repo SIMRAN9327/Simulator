@@ -131,15 +131,15 @@ st.sidebar.markdown(f"""
     <hr style="border: 0; border-top: 1px solid #3730a3; margin: 8px 0;">
     
     <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Distance Span</span><br>
-    <span style="color:#38bdf8; font-weight:bold; font-size: 1.05rem;">{dist_str}</span><br><br>
+    <span style="color: #38bdf8; font-weight: bold; font-size: 1.05rem;">{dist_str}</span><br><br>
     
     <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Recommended Topology</span><br>
-    <span style="color:#c084fc; font-weight:bold; font-size: 1.05rem;">{rec_topo}</span><br>
-    <small style="color:#cbd5e1; font-style: italic;">{topo_reason}</small><br><br>
+    <span style="color: #c084fc; font-weight: bold; font-size: 1.05rem;">{rec_topo}</span><br>
+    <small style="color: #cbd5e1; font-style: italic;">{topo_reason}</small><br><br>
     
     <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Recommended Media</span><br>
-    <span style="color:#34d399; font-weight:bold; font-size: 1.05rem;">{rec_media}</span><br>
-    <small style="color:#cbd5e1; font-style: italic;">{media_reason}</small>
+    <span style="color: #34d399; font-weight: bold; font-size: 1.05rem;">{rec_media}</span><br>
+    <small style="color: #cbd5e1; font-style: italic;">{media_reason}</small>
 </div>
 """, unsafe_allow_html=True)
 
