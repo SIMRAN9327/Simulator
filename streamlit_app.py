@@ -63,11 +63,12 @@ st.markdown("""
         color: #fecdd3;
     }
     .ai-badge {
-        background-color: #1e1b4b;
-        border: 1px solid #818cf8;
-        padding: 12px;
-        border-radius: 6px;
+        background-color: #17153a;
+        border: 1px solid #6366f1;
+        padding: 15px;
+        border-radius: 8px;
         margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
     }
     .disadvantage-box {
         background-color: #18181b;
@@ -120,14 +121,21 @@ else:
     rec_media = "Satellite / Intercontinental WAN Link"
     media_reason = "Mandatory for extreme long-distance intercontinental transmissions."
 
+# Enhanced high-contrast AI Recommendation Card
 st.sidebar.markdown(f"""
 <div class="ai-badge">
-<b>🤖 AI Advisor Recommendations:</b><br>
-- Distance Span: <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span><br>
-- Recommended Topology: <span style="color:#38bdf8; font-weight:bold;">{rec_topo}</span><br>
-<small style="color:#cbd5e1;">{topo_reason}</small><br><br>
-- Recommended Media: <span style="color:#38bdf8; font-weight:bold;">{rec_media}</span><br>
-<small style="color:#cbd5e1;">{media_reason}</small>
+    <b style="color: #f8fafc; font-size: 1rem;">🤖 AI Advisor Recommendations</b><br>
+    <hr style="border: 0; border-top: 1px solid #3730a3; margin: 8px 0;">
+    <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Distance Span</span><br>
+    <span style="color:#38bdf8; font-weight:bold; font-size: 1.05rem;">{dist_str}</span><br><br>
+    
+    <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Recommended Topology</span><br>
+    <span style="color:#c084fc; font-weight:bold; font-size: 1.05rem;">{rec_topo}</span><br>
+    <small style="color:#cbd5e1; font-style: italic;">{topo_reason}</small><br><br>
+    
+    <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Recommended Media</span><br>
+    <span style="color:#34d399; font-weight:bold; font-size: 1.05rem;">{rec_media}</span><br>
+    <small style="color:#cbd5e1; font-style: italic;">{media_reason}</small>
 </div>
 """, unsafe_allow_html=True)
 
@@ -234,7 +242,6 @@ with tab1:
         st.subheader("📊 Performance Metrics")
         m1, m2, m3 = st.columns(3)
         
-        # High-contrast custom metric cards replacing default st.metric
         m1.markdown(f"""
         <div class="metric-card">
             <span style="color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Calculated Latency</span><br>
