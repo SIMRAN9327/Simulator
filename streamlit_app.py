@@ -97,10 +97,10 @@ if distance_m >= 1000:
 else:
     dist_str = f"{distance_m:,} meters"
 
-# --- SCALED AI RECOMMENDATION LOGIC ---
-if distance_m > 500000:
+# --- SCALED & REALISTIC AI RECOMMENDATION LOGIC ---
+if distance_m > 100000:
     rec_topo = "Mesh"
-    topo_reason = "Long-haul WAN/Global scale requires Mesh for multi-path redundancy."
+    topo_reason = "Regional/Long-distance WAN scale requires Mesh for multi-path redundancy."
 elif num_nodes <= 24:
     rec_topo = "Star"
     topo_reason = "Ideal for standard switch port densities with centralized management."
@@ -117,15 +117,19 @@ if distance_m <= 100:
 elif distance_m <= 100000:
     rec_media = "Fiber Optic"
     media_reason = "Essential for medium-to-long campus and MAN distances."
+elif distance_m <= 1500000:
+    rec_media = "Long-Haul Regional Fiber"
+    media_reason = "Optimal for multi-hundred kilometer regional WAN links."
 else:
     rec_media = "Satellite / Intercontinental WAN Link"
     media_reason = "Mandatory for extreme long-distance intercontinental transmissions."
 
-# Enhanced high-contrast AI Recommendation Card
+# Enhanced high-contrast AI Recommendation Card with fully styled labels
 st.sidebar.markdown(f"""
 <div class="ai-badge">
     <b style="color: #f8fafc; font-size: 1rem;">🤖 AI Advisor Recommendations</b><br>
     <hr style="border: 0; border-top: 1px solid #3730a3; margin: 8px 0;">
+    
     <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">Distance Span</span><br>
     <span style="color:#38bdf8; font-weight:bold; font-size: 1.05rem;">{dist_str}</span><br><br>
     
@@ -149,8 +153,8 @@ topology = st.sidebar.selectbox(
 
 media = st.sidebar.selectbox(
     "2. Select Transmission Media (Layer 1)",
-    ["Copper (UTP Cat6)", "Fiber Optic", "Wireless / Wi-Fi", "Satellite / WAN Link"],
-    index=1 if distance_m > 100 else 0
+    ["Copper (UTP Cat6)", "Fiber Optic", "Long-Haul Regional Fiber", "Wireless / Wi-Fi", "Satellite / WAN Link"],
+    index=2 if distance_m > 100000 else (1 if distance_m > 100 else 0)
 )
 
 device = st.sidebar.selectbox(
@@ -174,7 +178,13 @@ if 'last_packet' not in st.session_state:
     st.session_state['last_packet'] = None
 
 # --- PERFORMANCE & PROPAGATION ENGINE ---
-media_speed_map = {"Copper (UTP Cat6)": 1000, "Fiber Optic": 10000, "Wireless / Wi-Fi": 300, "Satellite / WAN Link": 150}
+media_speed_map = {
+    "Copper (UTP Cat6)": 1000, 
+    "Fiber Optic": 10000, 
+    "Long-Haul Regional Fiber": 40000,
+    "Wireless / Wi-Fi": 300, 
+    "Satellite / WAN Link": 150
+}
 media_speed = media_speed_map.get(media, 1000)
 
 if "Fiber" in media:
@@ -404,7 +414,7 @@ with tab2:
     if "Copper" in media:
         y_vals = np.sin(x_vals) * np.exp(-0.02 * x_vals)
         wave_title = "Electrical Voltage Pulses (Square/Sine Wave with Attenuation)"
-    elif "Fiber" in media:
+    elif "Fiber" in media or "Regional" in media:
         y_vals = np.sin(x_vals * 1.5)
         wave_title = "Optical Light Pulses (High Frequency / Low Attenuation)"
     elif "Satellite" in media:
