@@ -11,12 +11,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- FUTURISTIC DARK THEME CSS ---
+# --- HIGH-CONTRAST FUTURISTIC DARK THEME CSS ---
 st.markdown("""
 <style>
     .stApp {
         background-color: #0b0f19;
-        color: #e2e8f0;
+        color: #f8fafc;
     }
     h1, h2, h3 {
         color: #38bdf8 !important;
@@ -24,7 +24,7 @@ st.markdown("""
     }
     .card {
         background-color: #111827;
-        border: 1px solid #1f2937;
+        border: 1px solid #334155;
         padding: 20px;
         border-radius: 8px;
         margin-bottom: 15px;
@@ -37,53 +37,61 @@ st.markdown("""
         border-radius: 4px;
     }
     .success-box {
-        background-color: #064e3b;
-        border-left: 4px solid #10b981;
+        background-color: #022c22;
+        border-left: 4px solid #34d399;
         padding: 15px;
         border-radius: 6px;
         font-family: monospace;
         margin-top: 10px;
+        color: #a7f3d0;
     }
     .error-box {
-        background-color: #7f1d1d;
-        border-left: 4px solid #f43f5e;
+        background-color: #450a0a;
+        border-left: 4px solid #fb7185;
         padding: 15px;
         border-radius: 6px;
         font-family: monospace;
         margin-top: 10px;
+        color: #fecdd3;
     }
     .ai-badge {
         background-color: #1e1b4b;
-        border: 1px solid #6366f1;
+        border: 1px solid #818cf8;
         padding: 12px;
         border-radius: 6px;
         margin-bottom: 15px;
     }
+    .disadvantage-box {
+        background-color: #18181b;
+        border: 1px solid #3f3f46;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 15px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🌐 CyberNet: AI-Powered Networking & Frame Simulator (WAN & Global Scale)")
+st.title("🌐 CyberNet: AI-Powered Networking & Topology Analyzer")
 st.markdown("""
-*An advanced simulation tool built for computer networking students. Configure up to **100 nodes** and span distances **up to 20,000 km (WAN/Global)** to simulate local, metropolitan, and intercontinental transmissions.*
+*An advanced interactive simulation tool built for computer networking students. Configure up to **100 nodes** and span distances **up to 20,000 km (WAN/Global)** with high-visibility graphics.*
 """)
 
 # --- SIDEBAR: PARAMETERS & AI RECOMMENDATIONS ---
 st.sidebar.header("🎛️ Network Parameters")
 
-# 1. User inputs for AI recommendations (Nodes up to 100, Distance up to 20,000,000 meters)
-num_nodes = st.sidebar.slider("Number of Nodes", min_value=3, max_value=100, value=12, help="Total client endpoints in the network (supports up to 100 nodes).")
-distance_m = st.sidebar.number_input("Maximum Distance Span (meters)", min_value=10, max_value=20000000, value=500000, step=1000, help="Longest physical distance between nodes (supports up to 20,000 km for WAN/Global links).")
+num_nodes = st.sidebar.slider("Number of Nodes", min_value=3, max_value=100, value=12, help="Total client endpoints in the network.")
+distance_m = st.sidebar.number_input("Maximum Distance Span (meters)", min_value=10, max_value=20000000, value=500000, step=1000, help="Longest physical distance between nodes (up to 20,000 km).")
 
-# Format distance cleanly for display
 if distance_m >= 1000:
     dist_str = f"{distance_m / 1000:,.1f} km"
 else:
     dist_str = f"{distance_m:,} meters"
 
 # --- SCALED AI RECOMMENDATION LOGIC ---
-if distance_m > 500000:  # > 500 km
+if distance_m > 500000:
     rec_topo = "Mesh"
-    topo_reason = "Long-haul WAN/Global scale requires a Mesh topology for multi-path redundancy and fault tolerance."
+    topo_reason = "Long-haul WAN/Global scale requires Mesh for multi-path redundancy."
 elif num_nodes <= 24:
     rec_topo = "Star"
     topo_reason = "Ideal for standard switch port densities with centralized management."
@@ -92,16 +100,16 @@ elif num_nodes <= 60:
     topo_reason = "Efficient for medium-large node counts with deterministic token passing."
 else:
     rec_topo = "Mesh"
-    topo_reason = "High node count requires redundant paths for high availability."
+    topo_reason = "High node count requires redundant paths for fault tolerance."
 
 if distance_m <= 100:
     rec_media = "Copper (UTP Cat6)"
-    media_reason = "Ideal for short distances (<100m), offering high gigabit speeds at low cost."
-elif distance_m <= 100000:  # Up to 100 km
+    media_reason = "Ideal for short distances (<100m)."
+elif distance_m <= 100000:
     rec_media = "Fiber Optic"
-    media_reason = "Essential for medium-to-long campus and MAN distances with high immunity to interference."
+    media_reason = "Essential for medium-to-long campus and MAN distances."
 else:
-    rec_media = "Fiber Optic (Subsea/Long-Haul WAN)" if distance_m <= 5000000 else "Satellite / Intercontinental WAN Link"
+    rec_media = "Satellite / Intercontinental WAN Link"
     media_reason = "Mandatory for extreme long-distance intercontinental transmissions."
 
 st.sidebar.markdown(f"""
@@ -109,9 +117,9 @@ st.sidebar.markdown(f"""
 <b>🤖 AI Advisor Recommendations:</b><br>
 • Distance Span: <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span><br>
 • Recommended Topology: <span style="color:#38bdf8; font-weight:bold;">{rec_topo}</span><br>
-<small style="color:#94a3b8;">{topo_reason}</small><br><br>
+<small style="color:#cbd5e1;">{topo_reason}</small><br><br>
 • Recommended Media: <span style="color:#38bdf8; font-weight:bold;">{rec_media}</span><br>
-<small style="color:#94a3b8;">{media_reason}</small>
+<small style="color:#cbd5e1;">{media_reason}</small>
 </div>
 """, unsafe_allow_html=True)
 
@@ -139,7 +147,6 @@ architecture = st.sidebar.selectbox(
     ["Client-Server", "Peer-to-Peer (P2P)", "Cloud / Hybrid WAN"]
 )
 
-# Reset state when topology changes
 if 'prev_topo' not in st.session_state or st.session_state['prev_topo'] != topology:
     st.session_state['link_failed'] = False
     st.session_state['last_packet'] = None
@@ -151,24 +158,18 @@ if 'last_packet' not in st.session_state:
     st.session_state['last_packet'] = None
 
 # --- PERFORMANCE & PROPAGATION ENGINE ---
-media_speed_map = {
-    "Copper (UTP Cat6)": 1000, 
-    "Fiber Optic": 10000, 
-    "Wireless / Wi-Fi": 300,
-    "Satellite / WAN Link": 150
-}
+media_speed_map = {"Copper (UTP Cat6)": 1000, "Fiber Optic": 10000, "Wireless / Wi-Fi": 300, "Satellite / WAN Link": 150}
 media_speed = media_speed_map.get(media, 1000)
 
-# Physics-based propagation delay calculation (Speed of light in medium ≈ 200,000 km/s for fiber, 300,000 km/s for space/vacuum)
 if "Fiber" in media:
-    prop_velocity = 200000000  # meters per second (~200,000 km/s)
+    prop_velocity = 200000000
 elif "Satellite" in media:
-    prop_velocity = 299792458  # speed of light in vacuum
+    prop_velocity = 299792458
 else:
     prop_velocity = 200000000
 
-propagation_latency_ms = (distance_m / prop_velocity) * 1000  # Convert to milliseconds
-base_processing_latency = 5  # ms device processing overhead
+propagation_latency_ms = (distance_m / prop_velocity) * 1000
+base_processing_latency = 5
 
 if "Hub" in device:
     base_processing_latency *= 2.5
@@ -182,7 +183,7 @@ topo_multiplier = {"Star": 1.0, "Mesh": 0.8, "Ring": 1.4, "Bus": 2.2}[topology]
 final_latency = base_processing_latency + (propagation_latency_ms * topo_multiplier)
 final_throughput = max(10, media_speed / (topo_multiplier * (1 + num_nodes/200)))
 
-# --- BUILD DYNAMIC NETWORK GRAPH (UP TO 100 NODES) ---
+# --- BUILD DYNAMIC NETWORK GRAPH ---
 G = nx.Graph()
 node_names = [f"PC-{i+1}" for i in range(num_nodes)]
 
@@ -216,7 +217,7 @@ else: # Ring
     pos = nx.circular_layout(node_names)
 
 # --- TABS FOR PRESENTATION ---
-tab1, tab2, tab3 = st.tabs(["🗺️ Visual Topology & Packet Simulator", "📦 Frame Transmission & Medium Visuals", "📚 OSI & TCP/IP Model Stack"])
+tab1, tab2, tab3 = st.tabs(["🗺️ Visual Topology & Packet Simulator", "📦 Frame Transmission & Medium Visuals", "📚 OSI & Topology Trade-offs"])
 
 with tab1:
     col_metrics, col_viz = st.columns([1, 1], gap="large")
@@ -254,7 +255,7 @@ with tab1:
                 else:
                     if st.session_state['link_failed']:
                         st.session_state['last_packet'] = {
-                            'status': 'FAILED', 'reason': 'Destination unreachable due to simulated WAN link failure.',
+                            'status': 'FAILED', 'reason': 'Destination unreachable due to simulated link failure.',
                             'source': source_node, 'dest': dest_node, 'proto': protocol
                         }
                     else:
@@ -266,9 +267,8 @@ with tab1:
                                 'latency': f"{final_latency:.1f} ms", 'source': source_node, 'dest': dest_node, 'proto': protocol
                             }
                         except nx.NetworkXNoPath:
-                            st.session_state['last_packet'] = {'status': 'FAILED', 'reason': 'No route available across WAN.'}
+                            st.session_state['last_packet'] = {'status': 'FAILED', 'reason': 'No route available across network.'}
             
-            # Display Packet Result
             if st.session_state['last_packet']:
                 pkt = st.session_state['last_packet']
                 if pkt['status'] == 'DELIVERED':
@@ -276,10 +276,10 @@ with tab1:
                     st.markdown(f"""
                     <div class='success-box'>
                     <b>PACKET INFORMATION</b><br>
-                    <b>Source:</b> <span style="color:#38bdf8; font-weight:bold;">{pkt['source']}</span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Destination:</b> <span style="color:#38bdf8; font-weight:bold;">{pkt['dest']}</span><br>
-                    <b>Protocol:</b> <span style="color:#38bdf8; font-weight:bold;">{pkt['proto']}</span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Distance Span:</b> <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span><br>
-                    <b>Latency:</b> <span style="color:#38bdf8; font-weight:bold;">{pkt['latency']}</span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Route Preview:</b> {path_preview}<br>
-                    <b>Status:</b> <span style="color:#34d399; font-weight:bold;">✓ Delivered Successfully Across WAN</span>
+                    <b>Source:</b> <span style="color:#34d399; font-weight:bold;">{pkt['source']}</span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Destination:</b> <span style="color:#34d399; font-weight:bold;">{pkt['dest']}</span><br>
+                    <b>Protocol:</b> <span style="color:#34d399; font-weight:bold;">{pkt['proto']}</span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Distance:</b> <span style="color:#34d399; font-weight:bold;">{dist_str}</span><br>
+                    <b>Latency:</b> <span style="color:#34d399; font-weight:bold;">{pkt['latency']}</span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Route:</b> {path_preview}<br>
+                    <b>Status:</b> ✓ Delivered Successfully
                     </div>
                     """, unsafe_allow_html=True)
                 else:
@@ -311,39 +311,46 @@ with tab1:
         node_colors = []
         for node in G.nodes():
             if st.session_state['link_failed'] and node == "PC-1":
-                node_colors.append('#f43f5e')
+                node_colors.append('#fb7185')  # Bright red for failure
             elif "PC" in node:
-                node_colors.append('#38bdf8')
+                node_colors.append('#00ffff')  # High-visibility electric cyan
             else:
-                node_colors.append('#8b5cf6')
+                node_colors.append('#c084fc')  # Vibrant neon purple for hubs/switches
 
         topo_fig = go.Figure()
-        topo_fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=1.5 if num_nodes > 30 else 3, color='#f43f5e' if st.session_state['link_failed'] else '#38bdf8'), mode='lines'))
+        # High-contrast bright cyan or red lines
+        topo_fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=2 if num_nodes > 30 else 3, color='#fb7185' if st.session_state['link_failed'] else '#38bdf8'), mode='lines'))
         topo_fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='text+markers',
-            marker=dict(size=14 if num_nodes > 30 else 22, color=node_colors, line=dict(width=1.5, color='#ffffff')),
-            text=node_text, textposition="top center"))
+            marker=dict(size=14 if num_nodes > 30 else 24, color=node_colors, line=dict(width=2, color='#ffffff')),
+            text=node_text, textposition="top center", textfont=dict(color="#f8fafc", size=12)))
         
-        topo_fig.update_layout(showlegend=False, xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                              yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                              template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=480)
+        # High-visibility plot background container box `#111827`
+        topo_fig.update_layout(
+            showlegend=False, 
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            paper_bgcolor='#0b0f19', 
+            plot_bgcolor='#111827', 
+            height=480,
+            margin=dict(l=20, r=20, t=20, b=20)
+        )
         st.plotly_chart(topo_fig, use_container_width=True)
 
 with tab2:
     st.subheader("📦 Layer 2 Frame Encapsulation & Medium Transmission Visuals")
-    st.markdown(f"Inspect how data is encapsulated into frames and transmitted over a distance of <span style='color:#38bdf8; font-weight:bold;'>{dist_str}</span> via <span style='color:#38bdf8; font-weight:bold;'>{media}</span>.", unsafe_allow_html=True)
+    st.markdown(f"Active Medium: <span style='color:#38bdf8; font-weight:bold;'>{media}</span> | Span: <span style='color:#38bdf8; font-weight:bold;'>{dist_str}</span>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("""
         <div class="card">
         <h3>Ethernet II Frame Structure</h3>
-        <p>Data packaging for long-distance transport:</p>
         <ul>
-            <li><b>Preamble & SFD (8 Bytes):</b> Synchronization and clock recovery.</li>
-            <li><b>Destination MAC (6 Bytes):</b> Physical address of the receiving node.</li>
-            <li><b>Source MAC (6 Bytes):</b> Physical address of the sending node.</li>
-            <li><b>EtherType (2 Bytes):</b> Identifies upper-layer protocols (IPv4/IPv6).</li>
-            <li><b>Payload (46–1500 Bytes):</b> Encapsulated packet data.</li>
+            <li><b>Preamble & SFD (8 Bytes):</b> Synchronization.</li>
+            <li><b>Destination MAC (6 Bytes):</b> Target physical address.</li>
+            <li><b>Source MAC (6 Bytes):</b> Sender physical address.</li>
+            <li><b>EtherType (2 Bytes):</b> Upper protocol indicator.</li>
+            <li><b>Payload (46–1500 Bytes):</b> Encapsulated data packet.</li>
             <li><b>FCS / CRC (4 Bytes):</b> Frame Check Sequence for error detection.</li>
         </ul>
         </div>
@@ -352,57 +359,84 @@ with tab2:
     with c2:
         st.markdown(f"""
         <div class="card">
-        <h3>Transmission Medium Characteristics</h3>
-        <p>Active Medium: <span style="color:#38bdf8; font-weight:bold;">{media}</span></p>
+        <h3>Medium Characteristics</h3>
         <ul>
-            <li><b>Distance Span:</b> <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span></li>
             <li><b>Bandwidth Cap:</b> <span style="color:#34d399; font-weight:bold;">{media_speed} Mbps</span></li>
-            <li><b>Signal Representation:</b> <span style="color:#38bdf8;">{"Electrical Voltage Pulses" if "Copper" in media else "Light Pulses / Photons (Glass Core)" if "Fiber" in media else "RF Electromagnetic Waves / Satellites"}</span></li>
-            <li><b>Propagation Delay Impact:</b> <span style="color:#38bdf8; font-weight:bold;">{propagation_latency_ms:.1f} ms</span></li>
+            <li><b>Propagation Delay:</b> <span style="color:#38bdf8; font-weight:bold;">{propagation_latency_ms:.1f} ms</span></li>
         </ul>
         </div>
         """, unsafe_allow_html=True)
 
-    # Transmission Medium Signal Graph Simulation
-    st.markdown("### 📊 Transmission Medium Signal Waveform Visualization")
-    
+    st.markdown("### 📊 Transmission Signal Waveform Visualization")
     x_vals = np.linspace(0, 50, 500)
     if "Copper" in media:
         y_vals = np.sin(x_vals) * np.exp(-0.02 * x_vals)
-        wave_title = "Electrical Voltage Pulses (Square/Sine Wave with Distance Attenuation)"
+        wave_title = "Electrical Voltage Pulses (Square/Sine Wave with Attenuation)"
     elif "Fiber" in media:
         y_vals = np.sin(x_vals * 1.5)
-        wave_title = "Optical Light Pulses (High Frequency / Low Attenuation over Long Haul)"
+        wave_title = "Optical Light Pulses (High Frequency / Low Attenuation)"
     elif "Satellite" in media:
         y_vals = np.sin(x_vals * 0.5) * (1 + 0.8 * np.sin(x_vals * 0.1))
-        wave_title = "Satellite RF Link Waveform (High Propagation Delay / Atmospheric Scatter)"
+        wave_title = "Satellite RF Link Waveform (High Delay / Atmospheric Scatter)"
     else:
         y_vals = np.sin(x_vals) * (1 + 0.5 * np.sin(x_vals * 0.3))
-        wave_title = "RF Electromagnetic Wave (Subject to Noise / Path Loss)"
+        wave_title = "RF Electromagnetic Wave (Subject to Noise)"
 
     wave_fig = go.Figure()
-    wave_fig.add_trace(go.Scatter(x=x_vals, y=y_vals, mode='lines', line=dict(color='#38bdf8', width=3)))
+    wave_fig.add_trace(go.Scatter(x=x_vals, y=y_vals, mode='lines', line=dict(color='#00ffff', width=3)))
     wave_fig.update_layout(
-        title=wave_title,
+        title=dict(text=wave_title, font=dict(color="#38bdf8")),
         xaxis_title="Distance along Transmission Line",
         yaxis_title="Signal Amplitude",
-        template='plotly_dark',
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='#0b0f19',
+        plot_bgcolor='#111827',
+        font=dict(color="#f8fafc"),
         height=300
     )
     st.plotly_chart(wave_fig, use_container_width=True)
 
 with tab3:
-    st.subheader("📚 OSI Model & Protocol Stack Mapping")
-    st.markdown("Dynamic layer breakdown based on your active network choices:")
-
+    st.subheader("📚 OSI Model Stack & Topology Disadvantage Analysis")
+    
     st.markdown(f"""
-    <div class="osi-card"><b>Layer 7: Application Layer</b><br><span style="color:#94a3b8;">Protocols: HTTP, HTTPS, DNS, FTP | Architecture: <span style="color:#38bdf8; font-weight:bold;">{architecture}</span></span></div>
-    <div class="osi-card"><b>Layer 6: Presentation Layer</b><br><span style="color:#94a3b8;">Data formatting, encryption, compression, and character set conversion.</span></div>
-    <div class="osi-card"><b>Layer 5: Session Layer</b><br><span style="color:#94a3b8;">Manages dialog control, establishing, maintaining, and terminating sessions.</span></div>
-    <div class="osi-card"><b>Layer 4: Transport Layer</b><br><span style="color:#94a3b8;">Protocols: TCP (Connection-oriented, reliable) & UDP (Connectionless, fast stream)</span></div>
-    <div class="osi-card"><b>Layer 3: Network Layer</b><br><span style="color:#94a3b8;">Protocols: IPv4, IPv6, BGP/OSPF | Routing across <span style="color:#38bdf8; font-weight:bold;">{topology}</span> topology for <span style="color:#38bdf8; font-weight:bold;">{num_nodes} nodes</span> via <span style="color:#38bdf8; font-weight:bold;">{device}</span></span></div>
-    <div class="osi-card"><b>Layer 2: Data Link Layer</b><br><span style="color:#94a3b8;">Protocols: Ethernet MAC addressing, Framing, Error detection (CRC/FCS)</span></div>
-    <div class="osi-card"><b>Layer 1: Physical Layer</b><br><span style="color:#94a3b8;">Transmission Media: <span style="color:#38bdf8; font-weight:bold;">{media}</span> spanning <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span> (Calculated Latency Impact: {propagation_latency_ms:.1f} ms)</span></div>
+    <div class="osi-card"><b>Layer 7: Application Layer</b> | HTTP, HTTPS, DNS, FTP (Architecture: <b>{architecture}</b>)</div>
+    <div class="osi-card"><b>Layer 6: Presentation Layer</b> | Data formatting, encryption, compression.</div>
+    <div class="osi-card"><b>Layer 5: Session Layer</b> | Dialog control & session management.</div>
+    <div class="osi-card"><b>Layer 4: Transport Layer</b> | TCP (Reliable) & UDP (Fast Stream)</div>
+    <div class="osi-card"><b>Layer 3: Network Layer</b> | Routing across <b>{topology}</b> for <b>{num_nodes} nodes</b> via <b>{device}</b></div>
+    <div class="osi-card"><b>Layer 2: Data Link Layer</b> | Ethernet MAC addressing, Framing, CRC/FCS</div>
+    <div class="osi-card"><b>Layer 1: Physical Layer</b> | <b>{media}</b> spanning <b>{dist_str}</b></div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="disadvantage-box">
+    <h3>⚠️ Disadvantages of Other Network Topologies</h3>
+    <p>Every topology has trade-offs depending on scalability, cost, and fault tolerance:</p>
+    <ul>
+        <li><b>Star Topology Disadvantages:</b>
+            <ul>
+                <li><b>Single Point of Failure:</b> If the central switch/hub fails, the entire network goes down.</li>
+                <li><b>Cabling Cost:</b> Requires a dedicated cable run from every node back to the central hub/switch, increasing wiring expenses for large networks.</li>
+            </ul>
+        </li>
+        <li><b>Mesh Topology Disadvantages:</b>
+            <ul>
+                <li><b>Extremely High Cost:</b> Requires a vast amount of cabling and multiple interface ports per device, making it very expensive to implement.</li>
+                <li><b>Complex Installation:</b> Configuration, wiring management, and troubleshooting can become overwhelmingly complex as node count increases.</li>
+            </ul>
+        </li>
+        <li><b>Ring Topology Disadvantages:</b>
+            <ul>
+                <li><b>Single Break Vulnerability:</b> In a simple ring, a single cable break disrupts data circulation across the entire loop.</li>
+                <li><b>Latency Accumulation:</b> Data often must pass through intermediate nodes, which can increase overall transmission delay in large rings.</li>
+            </ul>
+        </li>
+        <li><b>Bus Topology Disadvantages:</b>
+            <ul>
+                <li><b>Scalability Bottleneck:</b> Adding new nodes degrades performance severely and increases data collision risks.</li>
+                <li><b>Difficult Fault Isolation:</b> A break anywhere along the main backbone cable disables the entire segment, and pinpointing the failure point is difficult.</li>
+            </ul>
+        </li>
+    </ul>
+    </div>
     """, unsafe_allow_html=True)
