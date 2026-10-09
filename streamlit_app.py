@@ -29,6 +29,14 @@ st.markdown("""
         border-radius: 8px;
         margin-bottom: 15px;
     }
+    .metric-card {
+        background-color: #111827;
+        border: 1px solid #334155;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 15px;
+    }
     .osi-card {
         background-color: #1e293b;
         border-left: 4px solid #38bdf8;
@@ -115,10 +123,10 @@ else:
 st.sidebar.markdown(f"""
 <div class="ai-badge">
 <b>🤖 AI Advisor Recommendations:</b><br>
-• Distance Span: <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span><br>
-• Recommended Topology: <span style="color:#38bdf8; font-weight:bold;">{rec_topo}</span><br>
+- Distance Span: <span style="color:#38bdf8; font-weight:bold;">{dist_str}</span><br>
+- Recommended Topology: <span style="color:#38bdf8; font-weight:bold;">{rec_topo}</span><br>
 <small style="color:#cbd5e1;">{topo_reason}</small><br><br>
-• Recommended Media: <span style="color:#38bdf8; font-weight:bold;">{rec_media}</span><br>
+- Recommended Media: <span style="color:#38bdf8; font-weight:bold;">{rec_media}</span><br>
 <small style="color:#cbd5e1;">{media_reason}</small>
 </div>
 """, unsafe_allow_html=True)
@@ -175,9 +183,9 @@ if "Hub" in device:
     base_processing_latency *= 2.5
     collision_risk = "High (Collision Domain)"
 elif "Switch" in device:
-    collision_risk = "None (Separated Collision Domains)"
+    collision_risk = "None (Separated)"
 else:
-    collision_risk = "None (Routed Subnets / WAN)"
+    collision_risk = "None (Routed)"
 
 topo_multiplier = {"Star": 1.0, "Mesh": 0.8, "Ring": 1.4, "Bus": 2.2}[topology]
 final_latency = base_processing_latency + (propagation_latency_ms * topo_multiplier)
@@ -225,9 +233,28 @@ with tab1:
     with col_metrics:
         st.subheader("📊 Performance Metrics")
         m1, m2, m3 = st.columns(3)
-        m1.metric("Calculated Latency", f"{final_latency:.1f} ms")
-        m2.metric("Effective Throughput", f"{final_throughput:.0f} Mbps")
-        m3.metric("Collision Domain", collision_risk)
+        
+        # High-contrast custom metric cards replacing default st.metric
+        m1.markdown(f"""
+        <div class="metric-card">
+            <span style="color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Calculated Latency</span><br>
+            <span style="color: #38bdf8; font-size: 1.35rem; font-weight: bold;">{final_latency:.1f} ms</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        m2.markdown(f"""
+        <div class="metric-card">
+            <span style="color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Throughput</span><br>
+            <span style="color: #34d399; font-size: 1.35rem; font-weight: bold;">{final_throughput:.0f} Mbps</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        m3.markdown(f"""
+        <div class="metric-card">
+            <span style="color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Collision Domain</span><br>
+            <span style="color: #f59e0b; font-size: 1.05rem; font-weight: bold;">{collision_risk}</span>
+        </div>
+        """, unsafe_allow_html=True)
         
         # --- PACKET TRANSMISSION SIMULATOR ---
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -318,13 +345,11 @@ with tab1:
                 node_colors.append('#c084fc')  # Vibrant neon purple for hubs/switches
 
         topo_fig = go.Figure()
-        # High-contrast bright cyan or red lines
         topo_fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=2 if num_nodes > 30 else 3, color='#fb7185' if st.session_state['link_failed'] else '#38bdf8'), mode='lines'))
         topo_fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='text+markers',
             marker=dict(size=14 if num_nodes > 30 else 24, color=node_colors, line=dict(width=2, color='#ffffff')),
             text=node_text, textposition="top center", textfont=dict(color="#f8fafc", size=12)))
         
-        # High-visibility plot background container box `#111827`
         topo_fig.update_layout(
             showlegend=False, 
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
