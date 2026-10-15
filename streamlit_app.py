@@ -123,9 +123,8 @@ st.markdown("---")
 
 # Alternative Topologies & Disadvantages Breakdown
 st.subheader("⚖️ Why Other Topologies Were Rejected (Trade-off Analysis)")
-st.write("To understand why the AI selected **" + recommendation['topology'] + "**, here is how alternative layouts compare and why they failed your specific requirements:")
+st.write(f"To understand why the AI selected **{recommendation['topology']}**, here is how alternative layouts compare and why they failed your specific requirements:")
 
-# Build an interactive or structured table/card breakdown of unchosen alternatives
 alt_col1, alt_col2 = st.columns(2)
 
 with alt_col1:
@@ -139,12 +138,14 @@ with alt_col1:
 
 with alt_col2:
     st.markdown("#### ⭐ Standard Star Topology")
+    star_reason = "Suitable for small counts, but fails under heavy multi-path long-distance requirements or massive 1,000-node cluster constraints." if num_nodes > 50 else "Not optimal for your chosen environment resilience level."
     st.markdown("- **Disadvantage:** Everything routes directly through a central hub or switch. If the central device fails, all connected peripheral nodes lose network access.")
-    st.markdown("- **Why rejected:** " + ("Suitable for small counts, but fails under heavy multi-path long-distance requirements or massive 1,000-node cluster constraints." if num_nodes > 50 else "Not optimal for your chosen environment resilience level.")))
+    st.markdown(f"- **Why rejected:** {star_reason}")
 
     st.markdown("#### 🕸️ Traditional Mesh Topology")
+    mesh_reason = "Used where required, but unnecessary infrastructure overhead for lower-density scenarios." if "Mesh" not in recommendation['topology'] else "Chosen due to critical reliability needs."
     st.markdown("- **Disadvantage:** Exorbitantly high cable and port costs; wiring complexity grows exponentially as node density increases.")
-    st.markdown("- **Why rejected:** " + ("Used where required, but unnecessary infrastructure overhead for lower-density scenarios." if "Mesh" not in recommendation['topology'] else "Chosen due to critical reliability needs.")))
+    st.markdown(f"- **Why rejected:** {mesh_reason}")
 
 st.markdown("---")
 
