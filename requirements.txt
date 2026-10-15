@@ -1,4 +1,5 @@
 streamlit
-plotly
 networkx
-numpy
+plotly
+pandas
+scipy
