@@ -105,29 +105,31 @@ if distance_m >= 1000:
 else:
     dist_str = f"{distance_m:,} meters"
 
-# --- SCALED AI RECOMMENDATION LOGIC ---
-if distance_m > 500000:
+# --- UNIFIED AI RECOMMENDATION LOGIC ---
+if distance_m > 100000:  # > 100 km (WAN / Long Haul)
     rec_topo = "Mesh"
-    topo_reason = "Long-haul WAN/Global scale requires Mesh for multi-path redundancy."
-elif num_nodes <= 24:
-    rec_topo = "Star"
-    topo_reason = "Ideal for standard switch port densities with centralized management."
-elif num_nodes <= 60:
+    topo_reason = "Long-distance WAN spans require Mesh topology for multi-path routing and redundancy."
+    rec_media = "Satellite / WAN Link"
+    media_reason = "Mandatory for extreme long-distance transmissions."
+elif distance_m > 10000:  # 10 km - 100 km (MAN / Campus)
     rec_topo = "Ring"
-    topo_reason = "Efficient for medium-large node counts with deterministic token passing."
-else:
-    rec_topo = "Mesh"
-    topo_reason = "High node count requires redundant paths for fault tolerance."
-
-if distance_m <= 100:
-    rec_media = "Copper (UTP Cat6)"
-    media_reason = "Ideal for short distances (<100m)."
-elif distance_m <= 100000:
+    topo_reason = "Efficient for medium-to-large multi-building campus layouts."
     rec_media = "Fiber Optic"
     media_reason = "Essential for medium-to-long campus and MAN distances."
-else:
-    rec_media = "Satellite / Intercontinental WAN Link"
-    media_reason = "Mandatory for extreme long-distance intercontinental transmissions."
+else:  # Local (< 10 km)
+    if num_nodes <= 24:
+        rec_topo = "Star"
+        topo_reason = "Ideal for standard switch port densities with centralized management."
+    else:
+        rec_topo = "Ring"
+        topo_reason = "Efficient for high node counts with deterministic token passing."
+    
+    if distance_m <= 100:
+        rec_media = "Copper (UTP Cat6)"
+        media_reason = "Ideal for short distances (<100m)."
+    else:
+        rec_media = "Fiber Optic"
+        media_reason = "Essential for campus-wide local distribution."
 
 # Enhanced high-contrast AI Recommendation Card
 st.sidebar.markdown(f"""
@@ -158,7 +160,7 @@ topology = st.sidebar.selectbox(
 media = st.sidebar.selectbox(
     "2. Select Transmission Media (Layer 1)",
     ["Copper (UTP Cat6)", "Fiber Optic", "Wireless / Wi-Fi", "Satellite / WAN Link"],
-    index=1 if distance_m > 100 else 0
+    index=["Copper (UTP Cat6)", "Fiber Optic", "Wireless / Wi-Fi", "Satellite / WAN Link"].index(rec_media) if rec_media in ["Copper (UTP Cat6)", "Fiber Optic", "Wireless / Wi-Fi", "Satellite / WAN Link"] else 1
 )
 
 device = st.sidebar.selectbox(
@@ -472,7 +474,6 @@ with tab3:
         ])
 
     if st.button("🔮 Run AI Network Design Analysis", type="primary"):
-        # AI decision matrix
         if "Global" in max_dist_input or "Multi-Continent" in org_type:
             rec_top = "Mesh Topology"
             rec_dev = "Layer 3 Enterprise Routers (BGP / OSPF)"
