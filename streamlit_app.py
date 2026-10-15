@@ -70,6 +70,14 @@ st.markdown("""
         margin-bottom: 15px;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
     }
+    .ai-bot-box {
+        background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+        border: 1px solid #818cf8;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(129, 140, 248, 0.2);
+    }
     .disadvantage-box {
         background-color: #18181b;
         border: 1px solid #3f3f46;
@@ -233,7 +241,12 @@ else: # Ring
     pos = nx.circular_layout(node_names)
 
 # --- TABS FOR PRESENTATION ---
-tab1, tab2, tab3 = st.tabs(["🗺️ Visual Topology & Packet Simulator", "📦 Frame Transmission & Medium Visuals", "📚 OSI & Topology Trade-offs"])
+tab1, tab2, tab3, tab4 = st.tabs([
+    "🗺️ Visual Topology & Packet Simulator", 
+    "📦 Frame Transmission & Medium Visuals", 
+    "🤖 AI Expert Consultant Bot", 
+    "📚 OSI & Topology Trade-offs"
+])
 
 with tab1:
     col_metrics, col_viz = st.columns([1, 1], gap="large")
@@ -428,6 +441,77 @@ with tab2:
     st.plotly_chart(wave_fig, use_container_width=True)
 
 with tab3:
+    st.subheader("🤖 CyberNet AI Expert Consultant")
+    st.markdown("Configure your scenario parameters below to let the AI expert recommend the optimal network architecture, topology, devices, and physical media.")
+    
+    col_ai1, col_ai2 = st.columns(2)
+    with col_ai1:
+        org_type = st.selectbox("Organization / Deployment Type", [
+            "Enterprise Office Campus (Indoor/Multi-floor)",
+            "Data Center / Cloud High-Performance Cluster",
+            "Remote Branch Office / Retail Store",
+            "Industrial IoT & Smart City Sensor Grid",
+            "Global Enterprise WAN / Multi-Continent"
+        ])
+        security_level = st.selectbox("Security & Redundancy Need", [
+            "Mission Critical (Zero Downtime / High Fault Tolerance)",
+            "Standard Business Operation",
+            "Cost-Optimized / Budget Restricted"
+        ])
+    
+    with col_ai2:
+        user_scale = st.selectbox("Scale of Network", [
+            "Small (< 25 devices)",
+            "Medium (25 - 100 devices)",
+            "Large Enterprise (100+ devices)"
+        ])
+        max_dist_input = st.selectbox("Geographic Coverage", [
+            "Local Room / Building (< 100 meters)",
+            "Campus / City-Wide (< 10 kilometers)",
+            "Intercontinental / Global (> 100 kilometers)"
+        ])
+
+    if st.button("🔮 Run AI Network Design Analysis", type="primary"):
+        # AI decision matrix
+        if "Global" in max_dist_input or "Multi-Continent" in org_type:
+            rec_top = "Mesh Topology"
+            rec_dev = "Layer 3 Enterprise Routers (BGP / OSPF)"
+            rec_med = "Fiber Optic & Satellite Backup Link"
+            rec_cost = "High Investment, Maximum Reliability"
+            rec_notes = "Global spans require robust multi-path routing to bypass single-link failures and high latency boundaries."
+        elif "Data Center" in org_type:
+            rec_top = "Mesh / Spine-Leaf Topology"
+            rec_dev = "Layer 3 Core Switches with High Switching Fabric"
+            rec_med = "Multi-Mode / Single-Mode Fiber Optic (10G-100G+)"
+            rec_cost = "Moderate to High"
+            rec_notes = "Optimized for east-west server-to-server traffic with minimal bottlenecks and ultra-low latency."
+        elif "Industrial" in org_type:
+            rec_top = "Ring / Star Hybrid Topology"
+            rec_dev = "Industrial Managed Layer 2 Switches"
+            rec_med = "Shielded Copper & Industrial Wireless / Fiber"
+            rec_cost = "Moderate"
+            rec_notes = "Ring topology provides self-healing loop recovery for harsh or spread-out operational sites."
+        else:
+            rec_top = "Star Topology"
+            rec_dev = "Managed Layer 2/3 Access Switches"
+            rec_med = "Copper (UTP Cat6) for indoor / Fiber uplinks"
+            rec_cost = "Cost-Effective & Scalable"
+            rec_notes = "Easiest to manage, troubleshoot, and scale for standard office environments with centralized gateway control."
+
+        st.markdown(f"""
+        <div class="ai-bot-box">
+            <h3 style="color: #38bdf8; margin-top: 0;">🤖 AI Architect Report & Recommendations</h3>
+            <hr style="border: 0; border-top: 1px solid #6366f1; margin: 10px 0;">
+            <p><b>Recommended Topology:</b> <span style="color: #c084fc; font-size: 1.1rem;">{rec_top}</span></p>
+            <p><b>Recommended Core Devices:</b> <span style="color: #38bdf8; font-size: 1.1rem;">{rec_dev}</span></p>
+            <p><b>Recommended Transmission Media:</b> <span style="color: #34d399; font-size: 1.1rem;">{rec_med}</span></p>
+            <p><b>Cost & Implementation Profile:</b> <span style="color: #fb7185;">{rec_cost}</span></p>
+            <hr style="border: 0; border-top: 1px dashed #475569; margin: 10px 0;">
+            <p><b>Expert Rationale:</b> <i>{rec_notes}</i></p>
+        </div>
+        """, unsafe_allow_html=True)
+
+with tab4:
     st.subheader("📚 OSI Model Stack & Topology Disadvantage Analysis")
     
     st.markdown(f"""
