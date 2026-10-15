@@ -113,7 +113,6 @@ st.write("Watch active data packets hop across connections in real-time.")
 
 if st.button("Start Live Packet Simulation", type="primary"):
     # Generate graph using NetworkX
-    # For large node configurations (>100), sparse parameters are used to optimize layout performance
     p_val = 0.05 if num_nodes > 100 else (0.3 if "Mesh" in recommendation['topology'] else 0.15)
     G = nx.erdos_renyi_graph(n=num_nodes, p=max(p_val, 2.0/num_nodes), seed=42)
     
@@ -121,8 +120,9 @@ if st.button("Start Live Packet Simulation", type="primary"):
     if not nx.is_connected(G) and num_nodes <= 150:
         G = nx.connected_watts_strogatz_graph(n=num_nodes, k=min(4, num_nodes-1), p=0.1, seed=42)
     
-    # Layout calculation (spring layout scaled for node counts)
-    pos = nx.spring_layout(G, seed=42, k=1.0/sqrt_val if 'sqrt_val' else None)
+    # Layout calculation with defined scaling factor
+    sqrt_val = num_nodes ** 0.5
+    pos = nx.spring_layout(G, seed=42, k=1.0 / sqrt_val if sqrt_val > 0 else None)
 
     # Prepare background edges trace
     edge_x, edge_y = [], []
@@ -146,7 +146,7 @@ if st.button("Start Live Packet Simulation", type="primary"):
         node_y.append(y)
         node_text.append(f"Node {node}")
 
-    node_size = max(4, min(18, 300 // int(num_nodes**0.5))) # Scale node size gracefully
+    node_size = max(4, min(18, 300 // int(num_nodes**0.5)))
     node_trace = go.Scatter(
         x=node_x, y=node_y, mode='markers',
         hoverinfo='text', text=node_text,
@@ -187,37 +187,32 @@ if st.button("Start Live Packet Simulation", type="primary"):
     
     edge_list = list(G.edges())
     if not edge_list:
-        edge_list = [(0, 1)] # Fallback
+        edge_list = [(0, 1)]
 
     # Simulate Packet Transmissions across hops
     for i in range(1, packet_count + 1):
-        # Pick a random edge/link path for the packet to traverse
         active_edge = random.choice(edge_list)
         start_pos = pos[active_edge[0]]
         end_pos = pos[active_edge[1]]
 
-        # Animate packet moving from start node to end node across steps
         steps = 4
         for step in range(steps + 1):
             fraction = step / steps
             curr_x = start_pos[0] + fraction * (end_pos[0] - start_pos[0])
             curr_y = start_pos[1] + fraction * (end_pos[1] - start_pos[1])
             
-            # Update packet coordinate frame
             fig.data[2].x = [curr_x]
             fig.data[2].y = [curr_y]
             plot_placeholder.plotly_chart(fig, use_container_width=True)
             time.sleep(0.01)
 
-        # Evaluate packet delivery outcome
-        is_success = random.random() > 0.04 # 96% baseline delivery rate
+        is_success = random.random() > 0.04
         latency = random.uniform(1.2, 38.0)
         
         if is_success:
             successful_packets += 1
             latencies.append(latency)
         
-        # Update Live Telemetry Metrics
         m_packets.metric("Packets Sent", f"{i} / {packet_count}")
         success_rate = (successful_packets / i) * 100
         m_success.metric("Success Rate", f"{success_rate:.1f}%")
@@ -227,7 +222,6 @@ if st.button("Start Live Packet Simulation", type="primary"):
         
         progress_bar.progress(i / packet_count)
 
-    # Clear active packet dot once simulation concludes
     fig.data[2].x = []
     fig.data[2].y = []
     plot_placeholder.plotly_chart(fig, use_container_width=True)
