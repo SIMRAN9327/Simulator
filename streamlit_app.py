@@ -31,7 +31,7 @@ st.markdown("""
 # App Header
 st.title("🌐 AI-Powered Network Architect & Live Packet Simulator")
 st.markdown("""
-Configure your enterprise network parameters below. Our AI advisor designs the optimal topology, 
+Configure your enterprise network parameters below. Our AI advisor dynamically selects the optimal topology, 
 transmission media, and hardware, breaks down why other topologies were rejected, and runs a **live animation of packets**.
 """)
 
@@ -43,27 +43,37 @@ packet_count = st.sidebar.slider("Packets to Send", min_value=10, max_value=200,
 traffic_type = st.sidebar.selectbox("Traffic / Data Type", ["General Data / Web", "High-Speed Video / Streaming", "IoT / Sensor Telemetry", "Mission-Critical / Financial"])
 env_type = st.sidebar.selectbox("Environment Type", ["Indoor Office / Home", "Industrial / Factory Floor", "Long Distance / Wide Area"])
 
-# Advanced AI Decision Engine Logic
+# Advanced Dynamic AI Decision Engine Logic
 def ai_network_advisor(nodes, traffic, environment):
-    # --- Topology Logic ---
+    # --- Fully Dynamic Topology Logic ---
     if environment == "Long Distance / Wide Area":
-        topology = "Mesh Topology"
-        topo_reason = "Provides redundant long-range routing paths, guaranteeing multi-point fault tolerance."
-    elif nodes <= 12 and traffic == "IoT / Sensor Telemetry":
+        if traffic == "Mission-Critical / Financial":
+            topology = "Full Mesh Topology"
+            topo_reason = "Mandatory multi-path redundancy over wide areas ensuring zero single points of failure."
+        else:
+            topology = "Partial Mesh Topology"
+            topo_reason = "Provides redundant long-range routing paths across wide expanses while optimizing deployment costs."
+    elif nodes <= 10 and traffic == "IoT / Sensor Telemetry":
         topology = "Star Topology"
-        topo_reason = "Centralized hub collection point simplifies sensor node tracking and drops overhead."
-    elif traffic == "Mission-Critical / Financial":
+        topo_reason = "Centralized hub collection point simplifies low-power sensor tracking and drops overhead."
+    elif traffic == "Mission-Critical / Financial" and nodes <= 50:
         topology = "Full Mesh Topology"
         topo_reason = "Zero-failure tolerance necessitates direct, dedicated point-to-point links between all nodes."
-    else:
+    elif traffic == "High-Speed Video / Streaming" and nodes <= 30:
+        topology = "Ring / Token-Ring Backbone Topology"
+        topo_reason = "Provides predictable high-bandwidth token passing for sequential heavy data streams."
+    elif nodes > 200:
         topology = "Hierarchical Star-Tree Topology"
-        topo_reason = "Efficiently clusters massive node volumes (up to 1,000+) while curbing broadcast congestion."
+        topo_reason = "Efficiently partitions massive scale volumes (up to 1,000 nodes) into manageable core/distribution tiers."
+    else:
+        topology = "Extended Star Topology"
+        topo_reason = "Balances local switch isolation with cost-effective multi-hub expansion for standard indoor layouts."
 
-    # --- Transmission Media Logic (Fully Dynamic) ---
+    # --- Transmission Media Logic ---
     if environment == "Industrial / Factory Floor":
         if traffic == "High-Speed Video / Streaming":
             media = "Armored Single-Mode Fiber Optics"
-            media_reason = "Mandatory for high-bandwidth video throughput while completely immune to high industrial EMI."
+            media_reason = "Mandatory for high-bandwidth video throughput while completely immune to heavy industrial EMI."
         else:
             media = "Industrial Shielded Twisted-Pair (Cat6A STP) with Grounding"
             media_reason = "Heavy copper shielding prevents electromagnetic noise degradation from heavy factory machinery."
@@ -73,7 +83,7 @@ def ai_network_advisor(nodes, traffic, environment):
     else: # Indoor Office / Home
         if traffic == "High-Speed Video / Streaming":
             media = "Cat6A Copper Ethernet & Wi-Fi 7 (802.11be) Multi-Gig Backbones"
-            media_reason = "Delivers multi-gigabit throughput rates required for heavy 4K/8K video streaming streams."
+            media_reason = "Delivers multi-gigabit throughput rates required for heavy 4K/8K video streams."
         elif traffic == "IoT / Sensor Telemetry":
             media = "Low-Power Wireless (LoRaWAN / Zigbee) & Cat5e Drops"
             media_reason = "Optimized for low-bandwidth, high-density sensor packet bursts over wide indoor coverage."
@@ -129,36 +139,44 @@ alt_col1, alt_col2 = st.columns(2)
 
 with alt_col1:
     st.markdown("#### ⭕ Ring Topology")
+    ring_rejected = "Chosen for sequential stream efficiency." if "Ring" in recommendation['topology'] else "Creates a single point of failure per node link and scales poorly for large cluster volumes."
     st.markdown("- **Disadvantage:** Data travels sequentially through every node. If a single cable breaks or a node fails, the entire network ring goes down.")
-    st.markdown("- **Why rejected:** Poor scalability for high node counts and creates a single point of absolute failure on every segment.")
+    st.markdown(f"- **Why rejected:** {ring_rejected}")
 
-    st.markdown("#### 🚌 Bus Topology")
+    st.markdown("#### 🚌 Bus / Linear Topology")
     st.markdown("- **Disadvantage:** Relies on a single central cable (the backbone). Heavy traffic triggers severe packet collisions, and cable damage halves the network.")
-    st.markdown("- **Why rejected:** Highly unstable for modern heavy packet workloads and completely inadequate for large scale operations.")
+    st.markdown("- **Why rejected:** Highly unstable for modern heavy packet workloads and completely inadequate for scale operations.")
 
 with alt_col2:
     st.markdown("#### ⭐ Standard Star Topology")
-    star_reason = "Suitable for small counts, but fails under heavy multi-path long-distance requirements or massive 1,000-node cluster constraints." if num_nodes > 50 else "Not optimal for your chosen environment resilience level."
+    star_reason = "Selected as the core design baseline." if "Star" in recommendation['topology'] else ("Suitable for small counts, but fails under heavy multi-path long-distance requirements or massive cluster constraints." if num_nodes > 50 else "Not optimal for your chosen environment resilience level.")
     st.markdown("- **Disadvantage:** Everything routes directly through a central hub or switch. If the central device fails, all connected peripheral nodes lose network access.")
     st.markdown(f"- **Why rejected:** {star_reason}")
 
     st.markdown("#### 🕸️ Traditional Mesh Topology")
-    mesh_reason = "Used where required, but unnecessary infrastructure overhead for lower-density scenarios." if "Mesh" not in recommendation['topology'] else "Chosen due to critical reliability needs."
-    st.markdown("- **Disadvantage:** Exorbitantly high cable and port costs; wiring complexity grows exponentially as node density increases.")
+    mesh_reason = "Used where required." if "Mesh" in recommendation['topology'] else "Exorbitantly high cable and port costs; wiring complexity grows exponentially as node density increases."
+    st.markdown("- **Disadvantage:** Extreme cabling overhead and high port cost density.")
     st.markdown(f"- **Why rejected:** {mesh_reason}")
 
 st.markdown("---")
 
-# Simulation Section
+# Simulation Section based on Chosen Topology Style
 st.subheader("🚀 Live Packet-Flow Simulation Dashboard")
 st.write("Watch active data packets hop across connections in real-time.")
 
 if st.button("Start Live Packet Simulation", type="primary"):
-    p_val = 0.05 if num_nodes > 100 else (0.3 if "Mesh" in recommendation['topology'] else 0.15)
-    G = nx.erdos_renyi_graph(n=num_nodes, p=max(p_val, 2.0/num_nodes), seed=42)
-    
-    if not nx.is_connected(G) and num_nodes <= 150:
-        G = nx.connected_watts_strogatz_graph(n=num_nodes, k=min(4, num_nodes-1), p=0.1, seed=42)
+    topo_name = recommendation['topology']
+    if "Ring" in topo_name:
+        G = nx.cycle_graph(num_nodes)
+    elif "Full Mesh" in topo_name and num_nodes <= 40:
+        G = nx.complete_graph(num_nodes)
+    elif "Star" in topo_name:
+        G = nx.star_graph(num_nodes - 1) if num_nodes > 1 else nx.path_graph(2)
+    else:
+        p_val = 0.05 if num_nodes > 100 else 0.2
+        G = nx.erdos_renyi_graph(n=num_nodes, p=max(p_val, 2.0/num_nodes), seed=42)
+        if not nx.is_connected(G) and num_nodes <= 150:
+            G = nx.connected_watts_strogatz_graph(n=num_nodes, k=min(4, num_nodes-1), p=0.1, seed=42)
     
     sqrt_val = num_nodes ** 0.5
     pos = nx.spring_layout(G, seed=42, k=1.0 / sqrt_val if sqrt_val > 0 else None)
@@ -198,7 +216,7 @@ if st.button("Start Live Packet Simulation", type="primary"):
 
     fig = go.Figure(data=[edge_trace, node_trace, packet_trace],
                     layout=go.Layout(
-                        title=f"<b>Live Traffic Routing Matrix ({num_nodes} Nodes Active)</b>",
+                        title=f"<b>Live Traffic Routing Matrix ({recommendation['topology']} | {num_nodes} Nodes)</b>",
                         showlegend=False, hovermode='closest',
                         margin=dict(b=0, l=0, r=0, t=40),
                         paper_bgcolor='#0e1117',
@@ -237,7 +255,8 @@ if st.button("Start Live Packet Simulation", type="primary"):
             
             fig.data[2].x = [curr_x]
             fig.data[2].y = [curr_y]
-            plot_placeholder.plotly_chart(fig, use_container_width=True)
+            # Added unique key parameter to avoid StreamlitDuplicateElementId error
+            plot_placeholder.plotly_chart(fig, use_container_width=True, key=f"sim_chart_{i}_{step}")
             time.sleep(0.01)
 
         is_success = random.random() > 0.04
@@ -258,5 +277,5 @@ if st.button("Start Live Packet Simulation", type="primary"):
 
     fig.data[2].x = []
     fig.data[2].y = []
-    plot_placeholder.plotly_chart(fig, use_container_width=True)
+    plot_placeholder.plotly_chart(fig, use_container_width=True, key="sim_chart_final")
     st.success("🎉 Simulation cycle finalized successfully across all network nodes!")
